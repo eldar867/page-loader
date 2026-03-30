@@ -1,1 +1,31 @@
-
+{
+  "name": "@hexlet/page-loader",
+  "version": "0.1.0",
+  "description": "CLI utility for downloading web pages with resources",
+  "main": "src/index.js",
+  "bin": {
+    "page-loader": "./bin/page-loader.js"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules npx jest --watch",
+    "lint": "eslint src/**/*.js",
+    "start": "node bin/page-loader.js"
+  },
+  "keywords": ["hexlet", "scraper", "cli", "downloader"],
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12",
+    "commander": "^12.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "nock": "^13.5.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
