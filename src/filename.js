@@ -1,19 +1,11 @@
-/**
- * @param {string} url - Исходный URL
- * @returns {string} - Имя файла с расширением .html
- */
+import { URL } from 'url';
 
-const generateFilename = (url) => {
-  try {
-    const urlObj = new URL(url);
-    const { hostname, pathname } = urlObj;
-    const rawName = `${hostname}${pathname}`.replace(/\/+$/, '');
-    const cleaned = rawName.replace(/[^a-z0-9]+/gi, '-');
-    const normalized = cleaned.replace(/^-+|-+$/g, '').toLowerCase();
-    return `${normalized}.html`;
-  } catch (error) {
-    throw new Error(`Failed to generate filename from URL "${url}": ${error.message}`);
-  }
+export const makeFilename = (urlString) => {
+  const url = new URL(urlString);
+  const hostname = url.hostname.replace(/[^a-z0-9]/gi, '-');
+  const pathname = url.pathname === '/' ? '' : url.pathname;
+  const pathPart = pathname.replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  
+  const name = [hostname, pathPart].filter(Boolean).join('-');
+  return `${name}.html`;
 };
-
-export default generateFilename;

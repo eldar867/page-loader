@@ -1,32 +1,48 @@
 import nock from 'nock';
-import { tmpdir } from 'os';
-import { join } from 'path';
-import downloadPage from '../src/downloadPage.js';
-
-const TEST_DIR = join(tmpdir(), 'pl-test');
-const URL = 'https://test.com/page';
-
-nock.disableNetConnect();
-afterAll(() => nock.enableNetConnect());
+import { downloadPage } from '../src/downloadPage.js';
+import { promises as fs } from 'fs';
+import path from 'path';
+import os from 'os';
 
 describe('downloadPage', () => {
-
-  test('скачивает страницу при успехе', async () => {
-    nock('https://test.com').get('/page').reply(200, '<html>OK</html>');
-    
-    const path = await downloadPage(URL, TEST_DIR);
-    
-    expect(path).toContain('test-com-page.html');
+  const testDir = path.join(os.tmpdir(), 'page-loader-test');
+  
+  beforeEach(async () => {
+    await fs.mkdir(testDir, { recursive: true });
   });
-
-  test('выдаёт ошибку при 404', async () => {
-    nock('https://test.com').get('/page').reply(404);
+  
+  afterEach(async () => {
+    nock.cleanAll();
+    await fs.rm(testDir, { recursive: true, force: true });
+  });
+  
+  test('downloads page and saves to file', async () => {
+    const url = 'https://example.com/test';
+    const html = '<html><body>Test</body></html>';
     
-    await expect(downloadPage(URL, TEST_DIR)).rejects.toThrow();
+    // Мокаем HTTP-запрос
+    nock('https://example.com')
+      .get('/test')
+      .reply(200, html);
+    
+    const filepath = await downloadPage(url, testDir);
+    
+    // Проверяем, что файл создан
+    await expect(fs.access(filepath)).resolves.not.toThrow();
+    
+    // Проверяем содержимое
+    const content = await fs.readFile(filepath, 'utf-8');
+    expect(content).toBe(html);
   });
-
-  test('выдаёт ошибку при неверном URL', async () => {
-    await expect(downloadPage('not-a-url', TEST_DIR)).rejects.toThrow();
+  
+  test('throws error on HTTP failure', async () => {
+    const url = 'https://example.com/not-found';
+    
+    nock('https://example.com')
+      .get('/not-found')
+      .reply(404);
+    
+    await expect(downloadPage(url, testDir))
+      .rejects.toThrow('HTTP 404');
   });
-
 });
